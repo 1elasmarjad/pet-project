@@ -7,21 +7,16 @@ import (
 )
 
 func main() {
-	var err error
+	var err error // variable to handle errors
 
-	app := fiber.New()
-
-	// --- DATABASE ---
-
-	db.ConnectDB()
+	db.ConnectDB() // connect database
 
 	if err != nil {
 		panic("Failed to migrate Pet")
 	}
 
-	// --- ENDPOINTS ---
-
-	api.SetupPetRoutes(app)
+	app := fiber.New()      // create application
+	api.SetupPetRoutes(app) // set-up endpoints
 
 	err = app.Listen(":3000")
 	if err != nil {

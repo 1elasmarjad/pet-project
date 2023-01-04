@@ -22,7 +22,11 @@ func getPet(c *fiber.Ctx) error {
 	targetID := c.Params("petID")
 
 	// Find pet
-	db.DB.Find(&pet, "id = ?", targetID)
+	err := db.DB.Where("id = ?", targetID).First(&pet).Error
+
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "Invalid search syntax", "data": nil})
+	}
 
 	// Not found?
 	if pet.ID == 0 {
@@ -46,16 +50,16 @@ func createPet(c *fiber.Ctx) error {
 	c.Type("application/json")
 	var pet = db.Pet{}
 
-	err := c.BodyParser(pet)
+	err := c.BodyParser(&pet)
 
-	//if err != nil {
-	//	return c.Status(422).JSON(fiber.Map{"status": "error", "message": "Invalid input", "data": err})
-	//}
+	if err != nil {
+		return c.Status(422).JSON(fiber.Map{"status": "error", "message": "Invalid input", "data": err})
+	}
 
 	err = db.DB.Create(&pet).Error
 
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Could not create pet", "data": err})
+		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Could not create pet", "data": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"status": "success", "message": "Created pet", "data": pet})
